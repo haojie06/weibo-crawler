@@ -181,33 +181,36 @@ async fn get_weibo(
                         .iter()
                         .map(|id| id.as_str().expect("failed to get pic_id"))
                         .collect::<Vec<&str>>(); // XXX 注意这里的标注
-                    let pic_infos = wb["pic_infos"]
-                        .as_object()
-                        .expect("failed to get pic_infos");
+                    let pic_infos = wb["pic_infos"].as_object(); // 图片可能为空
 
                     let mut weibo = Weibo {
                         text_raw: text_raw.to_string(),
                         created_at,
                         pics: vec![],
                     };
-                    for id in pic_ids {
-                        let pic_info = pic_infos[id].as_object().expect("failed to get pic_info");
-                        let largest = pic_info["largest"]
-                            .as_object()
-                            .expect("failed to get largest");
-                        let url = largest["url"].as_str().expect("failed to get largest url");
-                        let pic_type = pic_info["type"].as_str().expect("failed to get pic_type");
-                        let video_url = pic_info
-                            .get("video")
-                            .map_or("", |v| v.as_str().unwrap_or(""));
-                        let weibo_pic = WeiboPic {
-                            pic_id: id.to_string(),
-                            pic_type: pic_type.to_string(),
-                            url: url.to_string(),
-                            video_url: video_url.to_string(),
-                        };
-                        weibo.pics.push(weibo_pic);
+                    if let Some(pic_infos) = pic_infos {
+                        for id in pic_ids {
+                            let pic_info =
+                                pic_infos[id].as_object().expect("failed to get pic_info");
+                            let largest = pic_info["largest"]
+                                .as_object()
+                                .expect("failed to get largest");
+                            let url = largest["url"].as_str().expect("failed to get largest url");
+                            let pic_type =
+                                pic_info["type"].as_str().expect("failed to get pic_type");
+                            let video_url = pic_info
+                                .get("video")
+                                .map_or("", |v| v.as_str().unwrap_or(""));
+                            let weibo_pic = WeiboPic {
+                                pic_id: id.to_string(),
+                                pic_type: pic_type.to_string(),
+                                url: url.to_string(),
+                                video_url: video_url.to_string(),
+                            };
+                            weibo.pics.push(weibo_pic);
+                        }
                     }
+
                     weibos.push(weibo);
                 }
                 Ok(weibos)
