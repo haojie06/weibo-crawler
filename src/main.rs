@@ -85,7 +85,7 @@ impl Display for Weibo {
 }
 
 // 生成 vistor cookies
-async fn gent_vistor(client: &Client) -> Result<String, Box<dyn std::error::Error>> {
+async fn gen_vistor(client: &Client) -> Result<String, Box<dyn std::error::Error>> {
     let params = [
         ("cb", "visitor_gray_callback"),
         ("tid", ""),
@@ -273,7 +273,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut latest_created_at = Utc.with_ymd_and_hms(2000, 1, 1, 1, 1, 1).unwrap();
     loop {
         interval.tick().await;
-        let cookies_str = gent_vistor(&client).await?;
+        let cookies_str = gen_vistor(&client).await?;
         let mut weibos = get_weibo(&client, &uid, &cookies_str, 5).await?;
         let mut new_weibo_count = 0;
         while let Some(weibo) = weibos.pop() {
@@ -281,7 +281,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 println!("{} new weibo:\n{}", Local::now(), weibo);
                 new_weibo_count += 1;
                 latest_created_at = weibo.created_at.into();
-                append_to_file("weibo/weibo.txt", &format!("{}\n", weibo))?;
+                append_to_file("weibo/weibo.txt", &format!("{}\n\n", weibo))?;
                 for pic in weibo.pics {
                     let file_name = pic
                         .url
