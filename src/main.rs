@@ -12,6 +12,10 @@ struct Args {
     uid: String,
     #[arg(short, long, default_value = "30")]
     interval_secs: u64,
+    #[arg(short, long, default_value = "weibo/medias/")]
+    medias_dir: String,
+    #[arg(short, default_value = "5", help = "每次获取微博的数量")]
+    n: usize,
 }
 
 #[tokio::main]
@@ -23,7 +27,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let args = Args::parse();
     let crawler = WeiboCrawler::new(
         "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36".to_string(),
-        "weibo/medias/".to_string()
+        args.medias_dir,
     ).init().await?;
 
     let mut interval = interval(Duration::from_secs(args.interval_secs));
@@ -31,7 +35,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     loop {
         interval.tick().await;
         let mut new_weibo_count: i32 = 0;
-        let mut weibos = crawler.get_weibos(&args.uid, 5).await?;
+        let mut weibos = crawler.get_weibos(&args.uid, args.n).await?;
         while let Some(weibo) = weibos.pop() {
             if weibo.created_at > latest_created_at {
                 println!("{} new weibo:\n{}", Local::now(), weibo);
