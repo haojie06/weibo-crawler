@@ -1,5 +1,3 @@
-mod models;
-use models::*;
 use regex::Regex;
 use reqwest::{
     header::{COOKIE, REFERER},
@@ -10,6 +8,8 @@ use tokio::{
     fs::{self, OpenOptions},
     io::AsyncWriteExt,
 };
+mod models;
+use models::*;
 mod utils;
 use utils::*;
 
@@ -25,7 +25,7 @@ impl fmt::Display for CustomError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match *self {
             CustomError::GenVistorError => write!(f, "gen vistor error"),
-            CustomError::ParseVisitorError(ref msg) => write!(f, "parse vistor error: {}", msg), // TODO 学习 ref 的使用
+            CustomError::ParseVisitorError(ref msg) => write!(f, "parse vistor error: {}", msg),
             CustomError::GetWeiboError(ref msg) => write!(f, "get weibo error: {}", msg),
             CustomError::DownloadFileError => write!(f, "download file error"),
         }
