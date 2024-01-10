@@ -1,4 +1,5 @@
 use chrono::{Local, TimeZone, Utc};
+use clap::ArgAction;
 use clap::Parser;
 use tokio::time::{interval, Duration};
 use weibo_crawler::WeiboCrawler;
@@ -16,7 +17,12 @@ struct Args {
     medias_dir: String,
     #[arg(short, default_value = "5", help = "每次获取微博的数量")]
     n: usize,
-    #[arg(short, long, help = "删除旧文件", default_value = "false")]
+    #[arg(
+        short,
+        long,
+        help = "删除旧文件",
+        action, // 作为flag
+    )]
     replace_old_dir: bool,
 }
 
