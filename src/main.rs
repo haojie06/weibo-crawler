@@ -1,5 +1,4 @@
 use chrono::{Local, TimeZone, Utc};
-use clap::ArgAction;
 use clap::Parser;
 use tokio::time::{interval, Duration};
 use weibo_crawler::WeiboCrawler;
