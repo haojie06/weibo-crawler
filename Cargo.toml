@@ -10,6 +10,6 @@ chrono = "0.4.31"
 clap = { version = "4.4.14", features = ["derive"] }
 ctrlc = "3.4.2"
 regex = "1.10.2"
-reqwest = "0.11.23"
+reqwest = { version = "0.11.23", features = ["rustls-tls"]}
 serde_json = "1.0.111"
 tokio = { version = "1.35.1", features = ["full"] }
