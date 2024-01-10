@@ -3,11 +3,8 @@ use reqwest::{
     header::{COOKIE, REFERER},
     Client, StatusCode,
 };
-use std::{error::Error, fmt, path::Path};
-use tokio::{
-    fs::{self, OpenOptions},
-    io::AsyncWriteExt,
-};
+use std::{error::Error, fmt};
+use tokio::{fs::OpenOptions, io::AsyncWriteExt};
 mod models;
 use models::*;
 mod utils;
@@ -35,32 +32,24 @@ impl fmt::Display for CustomError {
 impl Error for CustomError {}
 pub struct WeiboCrawler {
     client: Client,
-    medias_dir: String,
     cookies_string: String,
 }
 
 impl WeiboCrawler {
-    pub fn new(user_agent: String, medias_dir: String) -> WeiboCrawler {
+    pub fn new(user_agent: String) -> WeiboCrawler {
         let client = Client::builder()
             .user_agent(user_agent)
             .build()
             .expect("build client failed");
         WeiboCrawler {
             client,
-            medias_dir,
             cookies_string: "".to_string(),
         }
     }
 
-    pub async fn init(mut self, replace_dir: bool) -> Result<Self, Box<dyn std::error::Error>> {
+    pub async fn init(mut self) -> Result<Self, Box<dyn std::error::Error>> {
         let cookies_string = self.gen_vistor_cookies_string().await?;
         self.cookies_string = cookies_string;
-        let dir_path = Path::new(&self.medias_dir);
-        if replace_dir && dir_path.exists() {
-            println!("removing old dir: {}", self.medias_dir);
-            fs::remove_dir_all(&self.medias_dir).await?;
-        }
-        fs::create_dir_all(&self.medias_dir).await?;
         Ok(self)
     }
     // 生成访客模式cookies
@@ -207,10 +196,14 @@ impl WeiboCrawler {
         }
     }
 
-    pub async fn download_weibo_file(&self, url: &str) -> Result<(), Box<dyn Error>> {
+    pub async fn download_weibo_file(
+        &self,
+        url: &str,
+        data_dir: &str,
+    ) -> Result<(), Box<dyn Error>> {
         let file_name = url.split("/").last().unwrap().split("?").next().unwrap();
-        println!("downloading {} {} to {}", file_name, url, self.medias_dir);
-        let file_path: String = format!("{}/{}", self.medias_dir, file_name);
+        println!("downloading {} {} to {}", file_name, url, data_dir);
+        let file_path: String = format!("{}/{}", data_dir, file_name);
         let resp = self
             .client
             .get(url)
