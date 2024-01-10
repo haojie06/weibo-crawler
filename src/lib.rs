@@ -3,7 +3,7 @@ use reqwest::{
     header::{COOKIE, REFERER},
     Client, StatusCode,
 };
-use std::{error::Error, fmt};
+use std::{error::Error, fmt, path::Path};
 use tokio::{
     fs::{self, OpenOptions},
     io::AsyncWriteExt,
@@ -52,9 +52,13 @@ impl WeiboCrawler {
         }
     }
 
-    pub async fn init(mut self) -> Result<Self, Box<dyn std::error::Error>> {
+    pub async fn init(mut self, replace_dir: bool) -> Result<Self, Box<dyn std::error::Error>> {
         let cookies_string = self.gen_vistor_cookies_string().await?;
         self.cookies_string = cookies_string;
+        let dir_path = Path::new(&self.medias_dir);
+        if replace_dir && dir_path.exists() {
+            fs::remove_dir_all(&self.medias_dir).await?;
+        }
         fs::create_dir_all(&self.medias_dir).await?;
         Ok(self)
     }
@@ -212,7 +216,6 @@ impl WeiboCrawler {
             .header(REFERER, "https://weibo.com/")
             .send()
             .await?;
-        println!("response status: {}", resp.status());
         match resp.status() {
             StatusCode::OK => {
                 let mut file = OpenOptions::new()
@@ -222,7 +225,7 @@ impl WeiboCrawler {
                     .await?;
                 let bytes = resp.bytes().await?;
                 file.write_all(&bytes).await?;
-                println!("downloaded {} bytes", bytes.len());
+                // println!("downloaded {} bytes", bytes.len());
                 Ok(())
             }
             s => {
