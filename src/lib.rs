@@ -57,6 +57,7 @@ impl WeiboCrawler {
         self.cookies_string = cookies_string;
         let dir_path = Path::new(&self.medias_dir);
         if replace_dir && dir_path.exists() {
+            println!("removing old dir: {}", self.medias_dir);
             fs::remove_dir_all(&self.medias_dir).await?;
         }
         fs::create_dir_all(&self.medias_dir).await?;
