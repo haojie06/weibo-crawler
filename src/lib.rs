@@ -3,7 +3,7 @@ use reqwest::{
     header::{COOKIE, REFERER},
     Client, StatusCode,
 };
-use std::{error::Error, fmt};
+use std::{error::Error, fmt, time::Duration};
 use tokio::{fs::OpenOptions, io::AsyncWriteExt};
 mod models;
 use models::*;
@@ -78,7 +78,7 @@ impl WeiboCrawler {
                             CustomError::ParseVisitorError(body.clone())
                         })?;
 
-                    // println!("{:#?}", deserialized);
+                    // println!("{:#?}", dFeserialized);
                     let mut cookies_string = String::new();
                     let sub = deserialized["data"]["sub"]
                         .as_str()
@@ -124,6 +124,7 @@ impl WeiboCrawler {
             .client
             .get(url)
             .header(COOKIE, &self.cookies_string)
+            .timeout(Duration::from_secs(10))
             .send()
             .await?;
         match resp.status() {
@@ -208,6 +209,7 @@ impl WeiboCrawler {
             .client
             .get(url)
             .header(REFERER, "https://weibo.com/")
+            .timeout(Duration::from_secs(30))
             .send()
             .await?;
         match resp.status() {
